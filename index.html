@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flip Card Example</title>
+  <style>
+    body {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Ensures no overlap, auto-fit */
+      grid-gap: 20px; /* Adequate spacing between cards */
+      justify-content: center;
+      align-items: start;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+      font-family: 'Times New Roman', serif;
+    }
+
+    .flip-card {
+      width: 100%;
+      height: 300px;
+      perspective: 1000px;
+      border-radius: 15px;
+      position: relative;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      text-align: center;
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      border-radius: 15px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .flip-card-back {
+      transform: rotateY(180deg);
+      background-color: #f9c74f;
+    }
+
+    #add-card {
+      margin-top: 20px;
+      padding: 10px 15px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #add-card:hover {
+      background-color: #45a049;
+    }
+
+    .edit-btn {
+      width: 30px;
+      height: 30px;
+      background-color: #ffb142;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+
+    .edit-btn:hover {
+      background-color: #ff9e30;
+    }
+
+    #background-changer {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+    }
+
+    .tooltip {
+      position: absolute;
+      bottom: 10px;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 5px;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .flip-card:hover .tooltip {
+      display: block;
+    }
+
+    /* Handling text overflow on the card */
+    .flip-card-front p, .flip-card-back p {
+      max-height: 5em; /* Limits text height */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 5; /* Limiting to 5 lines */
+      -webkit-box-orient: vertical;
+    }
+
+    .flip-card-front:hover p, .flip-card-back:hover p {
+      max-height: none;
+      overflow: visible;
+      -webkit-line-clamp: unset;
+    }
+
+    #music-player {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #music-player input[type="file"] {
+      display: none;
+    }
+
+    #upload-label {
+      cursor: pointer;
+      background-color: #4CAF50;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+    }
+
+    #upload-label:hover {
+      background-color: #45a049;
+    }
+
+    audio {
+      width: calc(100% - 150px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Changer -->
+  <div id="background-changer">
+    <input type="color" id="bg-color-picker" title="Change Background Color">
+    <input type="file" id="bg-image-picker" accept="image/jpeg, image/png" title="Upload Background Image">
+  </div>
+
+  <!-- Existing Cards -->
+  <div class="flip-card" onclick="this.classList.toggle('flipped')">
+    <div class="flip-card-inner">
+      <div class="flip-card-front">
+        <p>#1</p>
+      </div>
+      <div class="flip-card-back">
+        <p>Believe in people.</p>
+      </div>
+    </div>
+    <button class="edit-btn" onclick="editCard(this); event.stopPropagation();">✎</button>
+  </div>
+
+  <div class="flip-card" onclick="this.classList.toggle('flipped')">
+    <div class="flip-card-inner">
+      <div class="flip-card-front">
+        <p>#2</p>
+      </div>
+      <div class="flip-card-back">
+        <p>Embrace challenges.</p>
+      </div>
+    </div>
+    <button class="edit-btn" onclick="editCard(this); event.stopPropagation();">✎</button>
+  </div>
+
+  <div class="flip-card" onclick="this.classList.toggle('flipped')">
+    <div class="flip-card-inner">
+      <div class="flip-card-front">
+        <p>#3</p>
+      </div>
+      <div class="flip-card-back">
+        <p>Stay focused and positive.</p>
+      </div>
+    </div>
+    <button class="edit-btn" onclick="editCard(this); event.stopPropagation();">✎</button>
+  </div>
+
+  <!-- Button to Add More Cards -->
+  <button id="add-card" onclick="addCard()">+ Add Card</button>
+
+  <!-- Music Player -->
+  <div id="music-player">
+    <label id="upload-label" for="music-upload">Upload Music</label>
+    <input type="file" id="music-upload" accept="audio/*">
+    <audio id="audio-player" controls></audio>
+  </div>
+
+  <script>
+    // Function to add a new flip card dynamically
+    function addCard() {
+      const newCard = document.createElement('div');
+      newCard.classList.add('flip-card');
+      newCard.innerHTML = `
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <p>New Card</p>
+          </div>
+          <div class="flip-card-back">
+            <p>Edit me!</p>
+          </div>
+        </div>
+        <button class="edit-btn" onclick="editCard(this); event.stopPropagation();">✎</button>
+      `;
+      // Make the new card clickable to flip
+      newCard.onclick = function() {
+        this.classList.toggle('flipped');
+      };
+      document.body.insertBefore(newCard, document.getElementById('add-card'));
+    }
+
+    // Function to edit the card's content or color
+    function editCard(button) {
+      const card = button.parentElement;
+      const front = card.querySelector('.flip-card-front p');
+      const back = card.querySelector('.flip-card-back p');
+
+      // Provide options for editing
+      const option = prompt("What would you like to edit?\n1. Front Text\n2. Back Text\n3. Back Color", "1");
+
+      if (option === "1") {
+        const newFrontText = prompt("Edit the front text:", front.innerText);
+        if (newFrontText !== null) front.innerText = newFrontText;
+      } else if (option === "2") {
+        const newBackText = prompt("Edit the back text:", back.innerText);
+        if (newBackText !== null) back.innerText = newBackText;
+      } else if (option === "3") {
+        const newColor = prompt("Enter a background color (hex):", "#f9c74f");
+        if (newColor !== null) {
+          card.querySelector('.flip-card-back').style.backgroundColor = newColor;
+        }
+      } else {
+        alert("Invalid option. Please try again.");
+      }
+    }
+
+    // Function to change the background color or image of the page
+    const bgColorPicker = document.getElementById('bg-color-picker');
+    const bgImagePicker = document.getElementById('bg-image-picker');
+
+    bgColorPicker.addEventListener('input', (event) => {
+      document.body.style.backgroundColor = event.target.value;
+      document.body.style.backgroundImage = '';
+    });
+
+    bgImagePicker.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.body.style.backgroundImage = `url('${e.target.result}')`;
+          document.body.style.backgroundSize = 'cover';
+          document.body.style.backgroundRepeat = 'no-repeat';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Music Player Functionality
+    const musicUpload = document.getElementById('music-upload');
+    const audioPlayer = document.getElementById('audio-player');
+
+    musicUpload.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        audioPlayer.src = fileURL;
+        audioPlayer.play();
+      }
+    });
+  </script>
+
+</body>
+</html>
